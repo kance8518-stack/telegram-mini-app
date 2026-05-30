@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reward Zone</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src='//libtl.com/sdk.js' data-zone='11078538' data-sdk='show_11078538'></script>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     :root {
@@ -300,9 +301,7 @@
   let cooldownActive = false;
   const COOLDOWN = 30; // detik antar klaim
 
-  // ===== GANTI INI DENGAN ZONE ID MONETAG KAMU =====
-  const ZONE_ID = 'GANTI_ZONE_ID_KAMU';
-  // =================================================
+  const ZONE_ID = '11078538';
 
   // Render
   updateDisplay();
@@ -336,14 +335,8 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="icon">⏳</span> Memuat iklan...';
 
-    // Tampilkan iklan Monetag
-    // Ganti show_XXXXXXX dengan nama fungsi dari Zone ID kamu
-    if (typeof window[`show_${ZONE_ID}`] === 'function') {
-      window[`show_${ZONE_ID}`]();
-    }
-
-    // Simulasi iklan selesai (3 detik) — nanti diintegrasikan via postback
-    setTimeout(() => {
+    // Tampilkan iklan Monetag, reward diberikan setelah user selesai nonton
+    show_11078538().then(() => {
       // Tambah koin
       coins += 10;
       localStorage.setItem('rz_coins', coins);
@@ -358,7 +351,11 @@
       renderHistory();
       showToast();
       startCooldown();
-    }, 3000);
+    }).catch(() => {
+      // Jika iklan gagal dimuat
+      btn.disabled = false;
+      btn.innerHTML = '<span class="icon">▶️</span> Tonton Iklan & Klaim +10 Koin';
+    });
   }
 
   function startCooldown() {
@@ -398,8 +395,6 @@
   }
 </script>
 
-<!-- SDK Monetag — akan aktif setelah kamu dapat Zone ID -->
-<!-- <script src="//whephiwums.com/ZONE_ID/invoke.js" async></script> -->
 
 </body>
 </html>
