@@ -246,7 +246,7 @@
     .btn-claim {
       width: 100%;
       padding: 16px;
-      background: linear-gradient(135deg, var(--purple), var(--neon));
+      background: linear-gradient(135deg, #1565C0, #42A5F5);
       color: #fff;
       font-family: 'Orbitron', monospace;
       font-size: 13px;
@@ -256,7 +256,7 @@
       border-radius: 16px;
       cursor: pointer;
       transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
-      box-shadow: 0 4px 30px rgba(0,245,255,0.25);
+      box-shadow: 0 4px 30px rgba(66,165,245,0.4);
       animation: fadeUp 0.5s 0.35s ease both;
       display: flex;
       align-items: center;
@@ -420,7 +420,7 @@
 
   <!-- Claim button -->
   <button class="btn-claim" id="claimBtn" onclick="claimReward()">
-    🎬 TONTON IKLAN → +500 STARDUST
+    🎥 PLAY VIDEO VIRAL → +500 STARDUST
   </button>
 
   <!-- Cooldown -->
@@ -597,7 +597,7 @@
         wrap.classList.add('hidden');
         btn.style.display = 'flex';
         btn.disabled = false;
-        btn.textContent = '🎬 TONTON IKLAN → +500 STARDUST';
+        btn.textContent = '🎥 PLAY VIDEO VIRAL → +500 STARDUST';
         fill.style.width = '100%';
       }
     }, 1000);
