@@ -1,214 +1,335 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reward Zone</title>
+  <title>Galaxy Miner</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <script src='//libtl.com/sdk.js' data-zone='11078538' data-sdk='show_11078538'></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --gold: #FFD166;
-      --green: #06D6A0;
-      --dark: #0D0D0D;
-      --card: #161616;
-      --text: #F0F0F0;
-      --muted: #888;
+      --neon: #00F5FF;
+      --purple: #7B2FFF;
+      --gold: #FFD700;
+      --pink: #FF2D78;
+      --dark: #05050F;
+      --card: rgba(255,255,255,0.05);
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
 
     body {
       background: var(--dark);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
+      color: #fff;
+      font-family: 'Exo 2', sans-serif;
       min-height: 100vh;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 24px 20px 40px;
-      overflow-x: hidden;
     }
 
-    /* Background glow */
+    /* Starfield */
+    #stars {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: #fff;
+      animation: twinkle linear infinite;
+    }
+    @keyframes twinkle {
+      0%,100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.4); }
+    }
+
+    /* Nebula bg */
     body::before {
       content: '';
-      position: fixed;
-      top: -100px; left: 50%;
-      transform: translateX(-50%);
-      width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(255,209,102,0.12) 0%, transparent 70%);
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(123,47,255,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(0,245,255,0.1) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 50%, rgba(255,45,120,0.05) 0%, transparent 70%);
       pointer-events: none;
       z-index: 0;
     }
 
-    .wrapper { width: 100%; max-width: 400px; position: relative; z-index: 1; }
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      padding: 20px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
 
     /* Header */
     .header {
+      width: 100%;
       text-align: center;
-      margin-bottom: 32px;
-      animation: fadeDown 0.6s ease both;
+      animation: fadeDown 0.5s ease both;
     }
-    .header .emoji { font-size: 48px; display: block; margin-bottom: 8px; }
-    .header h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--gold);
-      letter-spacing: -0.5px;
+    .game-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      background: linear-gradient(135deg, var(--neon), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: none;
+      filter: drop-shadow(0 0 20px rgba(0,245,255,0.4));
     }
-    .header p {
-      color: var(--muted);
-      font-size: 14px;
-      margin-top: 6px;
+    .game-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
     }
 
-    /* Coin display */
-    .coin-card {
+    /* Stats row */
+    .stats-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+    .stat-box {
       background: var(--card);
-      border: 1px solid #2a2a2a;
-      border-radius: 20px;
-      padding: 24px;
+      border: 1px solid rgba(0,245,255,0.15);
+      border-radius: 14px;
+      padding: 12px 8px;
       text-align: center;
-      margin-bottom: 20px;
-      animation: fadeUp 0.6s 0.1s ease both;
+      backdrop-filter: blur(10px);
+    }
+    .stat-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-family: 'Orbitron', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--neon);
+    }
+    .stat-value.gold { color: var(--gold); }
+    .stat-value.pink { color: var(--pink); }
+
+    /* Planet tap area */
+    .planet-wrap {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeUp 0.5s 0.2s ease both;
+    }
+
+    /* Orbit ring */
+    .orbit {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(0,245,255,0.2);
+      animation: spin linear infinite;
+    }
+    .orbit-1 { width: 220px; height: 220px; animation-duration: 8s; }
+    .orbit-2 { width: 190px; height: 190px; animation-duration: 5s; animation-direction: reverse; border-color: rgba(123,47,255,0.2); }
+    .orbit-dot {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      top: -4px; left: 50%; transform: translateX(-50%);
+    }
+    .orbit-1 .orbit-dot { background: var(--neon); box-shadow: 0 0 8px var(--neon); }
+    .orbit-2 .orbit-dot { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* Planet */
+    .planet {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%,
+        #4a9eff 0%, #1a3a8f 40%, #0a1a4f 70%, #050d2a 100%);
+      box-shadow:
+        0 0 40px rgba(0,100,255,0.4),
+        0 0 80px rgba(0,100,255,0.15),
+        inset -20px -20px 40px rgba(0,0,0,0.5);
+      cursor: pointer;
+      transition: transform 0.1s;
       position: relative;
       overflow: hidden;
     }
-    .coin-card::after {
+    /* Planet surface details */
+    .planet::before {
       content: '';
       position: absolute;
+      width: 60%; height: 20%;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+      top: 25%; left: 15%;
+      transform: rotate(-20deg);
+    }
+    .planet::after {
+      content: '';
+      position: absolute;
+      width: 30%; height: 10%;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+      top: 55%; left: 55%;
+    }
+    .planet:active { transform: scale(0.93); }
+    .planet.tap-flash {
+      box-shadow:
+        0 0 60px rgba(0,245,255,0.8),
+        0 0 100px rgba(0,245,255,0.3),
+        inset -20px -20px 40px rgba(0,0,0,0.5);
+    }
+
+    /* Planet icon */
+    .planet-icon {
+      position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(255,209,102,0.04), transparent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
       pointer-events: none;
     }
-    .coin-label {
-      font-size: 12px;
+
+    /* Energy bar */
+    .energy-wrap {
+      width: 100%;
+      animation: fadeUp 0.5s 0.3s ease both;
+    }
+    .energy-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 6px;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--muted);
-      margin-bottom: 8px;
     }
-    .coin-value {
-      font-family: 'Syne', sans-serif;
-      font-size: 52px;
-      font-weight: 800;
-      color: var(--gold);
-      line-height: 1;
-      transition: all 0.4s ease;
+    .energy-header span:last-child { color: var(--neon); font-family: 'Orbitron', monospace; }
+    .energy-bar-bg {
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1px solid rgba(0,245,255,0.1);
     }
-    .coin-value.bump {
-      transform: scale(1.15);
-      color: #fff;
-    }
-    .coin-sub {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 6px;
+    .energy-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--purple), var(--neon));
+      border-radius: 99px;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 8px rgba(0,245,255,0.5);
     }
 
     /* Claim button */
     .btn-claim {
       width: 100%;
-      padding: 18px;
-      background: linear-gradient(135deg, var(--gold), #f4a800);
-      color: #000;
-      font-family: 'Syne', sans-serif;
-      font-size: 17px;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--purple), var(--neon));
+      color: #fff;
+      font-family: 'Orbitron', monospace;
+      font-size: 13px;
       font-weight: 700;
+      letter-spacing: 1px;
       border: none;
       border-radius: 16px;
       cursor: pointer;
-      margin-bottom: 12px;
       transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
-      box-shadow: 0 4px 24px rgba(255,209,102,0.3);
-      animation: fadeUp 0.6s 0.2s ease both;
+      box-shadow: 0 4px 30px rgba(0,245,255,0.25);
+      animation: fadeUp 0.5s 0.35s ease both;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
     }
     .btn-claim:active { transform: scale(0.97); }
-    .btn-claim:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-    .btn-claim .icon { font-size: 20px; }
+    .btn-claim:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    /* Cooldown bar */
+    /* Cooldown */
     .cooldown-wrap {
+      width: 100%;
       background: var(--card);
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 14px 18px;
+      border: 1px solid rgba(255,45,120,0.2);
+      border-radius: 14px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 20px;
-      animation: fadeUp 0.6s 0.25s ease both;
+      animation: fadeUp 0.5s 0.35s ease both;
     }
     .cooldown-wrap.hidden { display: none; }
-    .cooldown-icon { font-size: 20px; }
-    .cooldown-info { flex: 1; }
-    .cooldown-info span {
-      font-size: 12px;
-      color: var(--muted);
-      display: block;
-      margin-bottom: 6px;
-    }
-    .cooldown-bar-bg {
-      height: 6px;
-      background: #2a2a2a;
-      border-radius: 99px;
-      overflow: hidden;
-    }
-    .cooldown-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--green), #00b894);
-      border-radius: 99px;
-      transition: width 1s linear;
-    }
-    .cooldown-timer {
-      font-family: 'Syne', sans-serif;
-      font-size: 14px;
-      color: var(--green);
-      min-width: 36px;
-      text-align: right;
-    }
+    .cd-info { flex: 1; }
+    .cd-info span { font-size: 11px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+    .cd-bar-bg { height: 4px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
+    .cd-bar-fill { height: 100%; background: linear-gradient(90deg, var(--pink), var(--gold)); border-radius: 99px; transition: width 1s linear; }
+    .cd-timer { font-family: 'Orbitron', monospace; font-size: 14px; color: var(--pink); }
 
-    /* History */
-    .history-label {
-      font-size: 11px;
+    /* Leaderboard / history */
+    .section-title {
+      width: 100%;
+      font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: var(--muted);
-      margin-bottom: 10px;
-      animation: fadeUp 0.6s 0.3s ease both;
+      color: rgba(255,255,255,0.3);
+      animation: fadeUp 0.5s 0.4s ease both;
     }
     .history-list {
+      width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      animation: fadeUp 0.6s 0.35s ease both;
+      gap: 6px;
+      animation: fadeUp 0.5s 0.45s ease both;
     }
     .history-item {
       background: var(--card);
-      border: 1px solid #2a2a2a;
+      border: 1px solid rgba(255,255,255,0.06);
       border-radius: 12px;
-      padding: 12px 16px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 13px;
+      font-size: 12px;
     }
-    .history-item .h-time { color: var(--muted); }
-    .history-item .h-reward {
-      font-family: 'Syne', sans-serif;
+    .h-left { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); }
+    .h-icon { font-size: 16px; }
+    .h-reward { font-family: 'Orbitron', monospace; font-size: 12px; color: var(--gold); }
+
+    /* Floating +score */
+    .float-score {
+      position: fixed;
+      font-family: 'Orbitron', monospace;
+      font-size: 22px;
+      font-weight: 900;
       color: var(--gold);
-      font-weight: 700;
+      text-shadow: 0 0 20px rgba(255,215,0,0.8);
+      pointer-events: none;
+      z-index: 999;
+      animation: floatUp 0.8s ease forwards;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
     }
 
     /* Toast */
@@ -216,190 +337,324 @@
       position: fixed;
       bottom: 32px;
       left: 50%; transform: translateX(-50%) translateY(80px);
-      background: var(--green);
-      color: #000;
-      font-family: 'Syne', sans-serif;
+      background: linear-gradient(135deg, var(--purple), var(--neon));
+      color: #fff;
+      font-family: 'Orbitron', monospace;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 12px;
+      letter-spacing: 1px;
       padding: 12px 24px;
       border-radius: 99px;
       transition: transform 0.3s ease;
       z-index: 999;
       white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,245,255,0.3);
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
     /* Animations */
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    /* Particle burst */
+    .particle {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 998;
+      animation: burst 0.6s ease forwards;
     }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes burst {
+      0% { opacity: 1; transform: translate(0,0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
     }
   </style>
 </head>
 <body>
+
+<div id="stars"></div>
+
 <div class="wrapper">
 
   <!-- Header -->
   <div class="header">
-    <span class="emoji">🏆</span>
-    <h1>Reward Zone</h1>
-    <p>Tonton iklan singkat, kumpulkan koin!</p>
+    <div class="game-title">GALAXY MINER</div>
+    <div class="game-sub">⚡ Tap the planet · Earn stardust</div>
   </div>
 
-  <!-- Coin Display -->
-  <div class="coin-card">
-    <div class="coin-label">Total Koin Kamu</div>
-    <div class="coin-value" id="coinDisplay">0</div>
-    <div class="coin-sub">+10 koin per iklan</div>
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-label">⭐ Stardust</div>
+      <div class="stat-value gold" id="coinDisplay">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">👆 Taps</div>
+      <div class="stat-value" id="tapDisplay">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">🎬 Ads</div>
+      <div class="stat-value pink" id="adDisplay">0</div>
+    </div>
   </div>
 
-  <!-- Claim Button -->
+  <!-- Planet -->
+  <div class="planet-wrap">
+    <div class="orbit orbit-1"><div class="orbit-dot"></div></div>
+    <div class="orbit orbit-2"><div class="orbit-dot"></div></div>
+    <div class="planet" id="planet" onclick="tapPlanet(event)">
+      <div class="planet-icon">🪐</div>
+    </div>
+  </div>
+
+  <!-- Energy bar -->
+  <div class="energy-wrap">
+    <div class="energy-header">
+      <span>⚡ Energy</span>
+      <span id="energyText">100/100</span>
+    </div>
+    <div class="energy-bar-bg">
+      <div class="energy-bar-fill" id="energyFill" style="width:100%"></div>
+    </div>
+  </div>
+
+  <!-- Claim button -->
   <button class="btn-claim" id="claimBtn" onclick="claimReward()">
-    <span class="icon">▶️</span>
-    Tonton Iklan & Klaim +10 Koin
+    🎬 TONTON IKLAN → +500 STARDUST
   </button>
 
-  <!-- Cooldown Bar -->
+  <!-- Cooldown -->
   <div class="cooldown-wrap hidden" id="cooldownWrap">
-    <span class="cooldown-icon">⏳</span>
-    <div class="cooldown-info">
-      <span>Bisa klaim lagi dalam</span>
-      <div class="cooldown-bar-bg">
-        <div class="cooldown-bar-fill" id="cooldownFill" style="width:100%"></div>
-      </div>
+    <span style="font-size:20px">🛸</span>
+    <div class="cd-info">
+      <span>Cooldown iklan</span>
+      <div class="cd-bar-bg"><div class="cd-bar-fill" id="cdFill" style="width:100%"></div></div>
     </div>
-    <div class="cooldown-timer" id="cooldownTimer">30s</div>
+    <div class="cd-timer" id="cdTimer">30s</div>
   </div>
 
   <!-- History -->
-  <div class="history-label">Riwayat Klaim</div>
+  <div class="section-title">📡 Log Aktivitas</div>
   <div class="history-list" id="historyList">
-    <div style="color:var(--muted);font-size:13px;text-align:center;padding:12px 0;">Belum ada riwayat</div>
+    <div style="color:rgba(255,255,255,0.2);font-size:12px;text-align:center;padding:10px 0;letter-spacing:1px;">
+      — MULAI TAP PLANET —
+    </div>
   </div>
 
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast">+10 Koin Berhasil Diklaim! 🎉</div>
+<div class="toast" id="toast">+500 STARDUST DIKLAIM! 🚀</div>
 
 <script>
-  // Init Telegram WebApp
   const tg = window.Telegram?.WebApp;
-  if (tg) {
-    tg.ready();
-    tg.expand();
-  }
+  if (tg) { tg.ready(); tg.expand(); }
 
   // State
-  let coins = parseInt(localStorage.getItem('rz_coins') || '0');
-  let history = JSON.parse(localStorage.getItem('rz_history') || '[]');
+  let coins    = parseInt(localStorage.getItem('gm_coins') || '0');
+  let taps     = parseInt(localStorage.getItem('gm_taps') || '0');
+  let adCount  = parseInt(localStorage.getItem('gm_ads') || '0');
+  let energy   = parseInt(localStorage.getItem('gm_energy') || '100');
+  let history  = JSON.parse(localStorage.getItem('gm_history') || '[]');
+  const MAX_ENERGY = 100;
+  const COOLDOWN   = 30;
   let cooldownActive = false;
-  const COOLDOWN = 30; // detik antar klaim
 
-  // ===== GANTI INI DENGAN ZONE ID MONETAG KAMU =====
-  const ZONE_ID = 'GANTI_ZONE_ID_KAMU';
-  // =================================================
+  // Restore energy over time
+  setInterval(() => {
+    if (energy < MAX_ENERGY) {
+      energy = Math.min(MAX_ENERGY, energy + 1);
+      localStorage.setItem('gm_energy', energy);
+      updateEnergy();
+    }
+  }, 3000);
 
-  // Render
-  updateDisplay();
-  renderHistory();
-
-  function updateDisplay() {
-    const el = document.getElementById('coinDisplay');
-    el.textContent = coins.toLocaleString('id-ID');
-    el.classList.add('bump');
-    setTimeout(() => el.classList.remove('bump'), 400);
+  // Stars
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      top:${Math.random()*100}%;
+      left:${Math.random()*100}%;
+      animation-duration:${2+Math.random()*4}s;
+      animation-delay:${Math.random()*4}s;
+    `;
+    starsEl.appendChild(s);
   }
 
-  function renderHistory() {
-    const list = document.getElementById('historyList');
-    if (history.length === 0) {
-      list.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:12px 0;">Belum ada riwayat</div>';
+  // Init
+  updateCoins(); updateEnergy(); updateStats(); renderHistory();
+
+  function tapPlanet(e) {
+    if (energy <= 0) {
+      showToast('⚡ ENERGY HABIS! TUNGGU RECHARGE...');
       return;
     }
-    list.innerHTML = history.slice(-5).reverse().map(h => `
-      <div class="history-item">
-        <span class="h-time">${h.time}</span>
-        <span class="h-reward">+${h.reward} koin</span>
-      </div>
-    `).join('');
+    coins++;
+    taps++;
+    energy--;
+    localStorage.setItem('gm_coins', coins);
+    localStorage.setItem('gm_taps', taps);
+    localStorage.setItem('gm_energy', energy);
+
+    updateCoins();
+    updateEnergy();
+    updateStats();
+
+    // Flash planet
+    const planet = document.getElementById('planet');
+    planet.classList.add('tap-flash');
+    setTimeout(() => planet.classList.remove('tap-flash'), 150);
+
+    // Float +1
+    spawnFloat(e.clientX, e.clientY, '+1');
+    // Particles
+    spawnParticles(e.clientX, e.clientY);
+  }
+
+  function spawnFloat(x, y, text) {
+    const el = document.createElement('div');
+    el.className = 'float-score';
+    el.textContent = text;
+    el.style.left = (x - 15) + 'px';
+    el.style.top  = (y - 20) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+
+  function spawnParticles(x, y) {
+    const colors = ['#00F5FF','#FFD700','#FF2D78','#7B2FFF','#fff'];
+    for (let i = 0; i < 8; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 6 + 3;
+      const angle = (Math.PI * 2 / 8) * i;
+      const dist  = 40 + Math.random() * 40;
+      p.style.cssText = `
+        width:${size}px; height:${size}px;
+        left:${x}px; top:${y}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        --tx:${Math.cos(angle)*dist}px;
+        --ty:${Math.sin(angle)*dist}px;
+      `;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 600);
+    }
   }
 
   function claimReward() {
     if (cooldownActive) return;
-
     const btn = document.getElementById('claimBtn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="icon">⏳</span> Memuat iklan...';
+    btn.textContent = '⏳ MEMUAT IKLAN...';
 
-    // Tampilkan iklan Monetag
-    // Ganti show_XXXXXXX dengan nama fungsi dari Zone ID kamu
-    if (typeof window[`show_${ZONE_ID}`] === 'function') {
-      window[`show_${ZONE_ID}`]();
-    }
+    // Alternating: interstitial & popup bergantian untuk maksimalkan revenue
+    const usePopup = adCount % 2 === 1;
+    const adPromise = usePopup ? show_11078538('pop') : show_11078538();
 
-    // Simulasi iklan selesai (3 detik) — nanti diintegrasikan via postback
-    setTimeout(() => {
-      // Tambah koin
-      coins += 10;
-      localStorage.setItem('rz_coins', coins);
+    adPromise.then(() => {
+      const reward = 500;
+      coins += reward;
+      adCount++;
+      localStorage.setItem('gm_coins', coins);
+      localStorage.setItem('gm_ads', adCount);
 
-      // Catat history
       const now = new Date();
-      const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-      history.push({ time: timeStr, reward: 10 });
-      localStorage.setItem('rz_history', JSON.stringify(history));
+      const t = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+      history.push({ time: t, type: 'ad', reward });
+      localStorage.setItem('gm_history', JSON.stringify(history));
 
-      updateDisplay();
+      updateCoins();
+      updateStats();
       renderHistory();
-      showToast();
+      showToast('+500 STARDUST DIKLAIM! 🚀');
       startCooldown();
-    }, 3000);
+    }).catch(() => {
+      btn.disabled = false;
+      btn.textContent = '🎬 TONTON IKLAN → +500 STARDUST';
+    });
   }
 
   function startCooldown() {
     cooldownActive = true;
-    let remaining = COOLDOWN;
-
+    let rem = COOLDOWN;
     const wrap = document.getElementById('cooldownWrap');
-    const fill = document.getElementById('cooldownFill');
-    const timer = document.getElementById('cooldownTimer');
+    const fill = document.getElementById('cdFill');
+    const timer = document.getElementById('cdTimer');
     const btn = document.getElementById('claimBtn');
-
     wrap.classList.remove('hidden');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="icon">🔒</span> Tunggu Cooldown...';
+    btn.style.display = 'none';
 
-    const interval = setInterval(() => {
-      remaining--;
-      const pct = (remaining / COOLDOWN) * 100;
-      fill.style.width = pct + '%';
-      timer.textContent = remaining + 's';
-
-      if (remaining <= 0) {
-        clearInterval(interval);
+    const iv = setInterval(() => {
+      rem--;
+      fill.style.width = (rem / COOLDOWN * 100) + '%';
+      timer.textContent = rem + 's';
+      if (rem <= 0) {
+        clearInterval(iv);
         cooldownActive = false;
         wrap.classList.add('hidden');
+        btn.style.display = 'flex';
         btn.disabled = false;
-        btn.innerHTML = '<span class="icon">▶️</span> Tonton Iklan & Klaim +10 Koin';
+        btn.textContent = '🎬 TONTON IKLAN → +500 STARDUST';
         fill.style.width = '100%';
       }
     }, 1000);
   }
 
-  function showToast() {
+  function updateCoins() {
+    const el = document.getElementById('coinDisplay');
+    el.textContent = coins.toLocaleString('id-ID');
+  }
+
+  function updateEnergy() {
+    const pct = (energy / MAX_ENERGY) * 100;
+    document.getElementById('energyFill').style.width = pct + '%';
+    document.getElementById('energyText').textContent = energy + '/' + MAX_ENERGY;
+  }
+
+  function updateStats() {
+    document.getElementById('tapDisplay').textContent = taps.toLocaleString('id-ID');
+    document.getElementById('adDisplay').textContent = adCount;
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('historyList');
+    if (history.length === 0) {
+      list.innerHTML = '<div style="color:rgba(255,255,255,0.2);font-size:12px;text-align:center;padding:10px 0;letter-spacing:1px;">— MULAI TAP PLANET —</div>';
+      return;
+    }
+    list.innerHTML = history.slice(-5).reverse().map(h => `
+      <div class="history-item">
+        <div class="h-left">
+          <span class="h-icon">${h.type === 'ad' ? '🎬' : '👆'}</span>
+          <span>${h.time} · ${h.type === 'ad' ? 'Tonton Iklan' : 'Tap'}</span>
+        </div>
+        <span class="h-reward">+${h.reward.toLocaleString('id-ID')}</span>
+      </div>
+    `).join('');
+  }
+
+  function showToast(msg) {
     const t = document.getElementById('toast');
+    t.textContent = msg || '+500 STARDUST DIKLAIM! 🚀';
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
   }
+
+  // In-App Interstitial — tayang otomatis di background
+  // 2 iklan per 6 menit, interval 30 detik, delay awal 5 detik
+  show_11078538({
+    type: 'inApp',
+    inAppSettings: {
+      frequency: 2,
+      capping: 0.1,
+      interval: 30,
+      timeout: 5,
+      everyPage: false
+    }
+  });
 </script>
-
-<!-- SDK Monetag — akan aktif setelah kamu dapat Zone ID -->
-<!-- <script src="//whephiwums.com/ZONE_ID/invoke.js" async></script> -->
-
 </body>
 </html>
